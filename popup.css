@@ -1,0 +1,266 @@
+/* popup.css — Extension popup styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f14;
+  color: #e4e4e7;
+  font-size: 13px;
+}
+
+.popup-container {
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #27272a;
+}
+
+.header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fafafa;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #71717a;
+  margin-top: 1px;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 14px;
+}
+
+.section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a1a1aa;
+  margin-bottom: 6px;
+}
+
+/* Button Groups */
+.btn-group {
+  display: flex;
+  gap: 4px;
+  background: #1c1c22;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.btn-option {
+  flex: 1;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-option:hover {
+  color: #e4e4e7;
+  background: #27272a;
+}
+
+.btn-option.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* API Section */
+.api-section {
+  padding: 10px;
+  background: #1c1c22;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.api-section .section-label {
+  margin-top: 0;
+}
+
+.api-section .btn-group {
+  margin-bottom: 8px;
+}
+
+.api-key-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.api-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  background: #0f0f14;
+  color: #e4e4e7;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.api-input:focus {
+  border-color: #6366f1;
+}
+
+.api-input::placeholder {
+  color: #52525b;
+}
+
+.btn-save {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-save:hover {
+  background: #5558e6;
+}
+
+.api-hint {
+  font-size: 11px;
+  color: #71717a;
+  margin-top: 6px;
+}
+
+.api-hint.success {
+  color: #22c55e;
+}
+
+.api-hint.error {
+  color: #ef4444;
+}
+
+/* Stats */
+.stats-section {
+  padding: 10px 12px;
+  background: #1c1c22;
+  border-radius: 8px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Toggle */
+.toggle-section {
+  margin-bottom: 0;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e4e4e7;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #3f3f46;
+  border-radius: 22px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Enhancer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Prompt Enhancer</h1>
+        <p class="subtitle">Supercharge your AI prompts</p>
+      </div>
+    </header>
+
+    <!-- Enhancement Style -->
+    <section class="section">
+      <label class="section-label">Enhancement Style</label>
+      <div class="btn-group" id="styleGroup">
+        <button data-value="concise" class="btn-option">Concise</button>
+        <button data-value="balanced" class="btn-option active">Balanced</button>
+        <button data-value="detailed" class="btn-option">Detailed</button>
+      </div>
+    </section>
+
+    <!-- Enhancement Mode -->
+    <section class="section">
+      <label class="section-label">Enhancement Mode</label>
+      <div class="btn-group" id="modeGroup">
+        <button data-value="local" class="btn-option active">Local</button>
+        <button data-value="ai" class="btn-option">AI-Powered</button>
+      </div>
+    </section>
+
+    <!-- API Settings (only shown in AI mode) -->
+    <section class="section api-section" id="apiSection" style="display: none;">
+      <label class="section-label">API Provider</label>
+      <div class="btn-group" id="providerGroup">
+        <button data-value="openai" class="btn-option active">OpenAI</button>
+        <button data-value="anthropic" class="btn-option">Anthropic</button>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="apiKeyInput" placeholder="Enter API key" class="api-input" />
+        <button id="saveApiKey" class="btn-save">Save</button>
+      </div>
+      <p class="api-hint" id="apiHint"></p>
+    </section>
+
+    <!-- Stats -->
+    <section class="section stats-section">
+      <div class="stat">
+        <span class="stat-label">Prompts Enhanced</span>
+        <span class="stat-value" id="enhanceCount">0</span>
+      </div>
+    </section>
+
+    <!-- Enable/Disable Toggle -->
+    <section class="section toggle-section">
+      <label class="toggle-row">
+        <span class="toggle-label">Extension Enabled</span>
+        <div class="toggle-switch">
+          <input type="checkbox" id="enableToggle" checked />
+          <span class="toggle-slider"></span>
+        </div>
+      </label>
+    </section>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

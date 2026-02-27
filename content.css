@@ -1,0 +1,84 @@
+/* content.css — Floating enhance button styles */
+
+#prompt-enhancer-btn {
+  position: fixed;
+  z-index: 2147483647;
+  cursor: pointer;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+#prompt-enhancer-btn .pe-btn-inner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35), 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+#prompt-enhancer-btn:hover .pe-btn-inner {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, #5558e6, #7c4fe0);
+}
+
+#prompt-enhancer-btn:active .pe-btn-inner {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+}
+
+/* Icon */
+#prompt-enhancer-btn .pe-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+/* Label */
+#prompt-enhancer-btn .pe-label {
+  line-height: 1;
+}
+
+/* Loading state */
+#prompt-enhancer-btn.pe-loading .pe-btn-inner {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  animation: pe-pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pe-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* Success state */
+#prompt-enhancer-btn.pe-success .pe-btn-inner {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35);
+}
+
+/* Error state */
+#prompt-enhancer-btn.pe-error .pe-btn-inner {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+/* Responsive: collapse to icon-only on narrow containers */
+@media (max-width: 400px) {
+  #prompt-enhancer-btn .pe-label {
+    display: none;
+  }
+  #prompt-enhancer-btn .pe-btn-inner {
+    padding: 8px;
+    border-radius: 50%;
+  }
+}
