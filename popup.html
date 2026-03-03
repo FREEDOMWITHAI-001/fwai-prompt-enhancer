@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prompt Enhancer</title>
+  <title>Prompt Genius</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="popup-container">
-    <!-- Header -->
+
+    <!-- Header (always visible) -->
     <header class="header">
       <div class="header-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -16,64 +17,88 @@
         </svg>
       </div>
       <div>
-        <h1>Prompt Enhancer</h1>
+        <h1>Prompt Genius</h1>
         <p class="subtitle">Supercharge your AI prompts</p>
       </div>
     </header>
 
-    <!-- Enhancement Style -->
-    <section class="section">
-      <label class="section-label">Enhancement Style</label>
-      <div class="btn-group" id="styleGroup">
-        <button data-value="concise" class="btn-option">Concise</button>
-        <button data-value="balanced" class="btn-option active">Balanced</button>
-        <button data-value="detailed" class="btn-option">Detailed</button>
-      </div>
-    </section>
+    <!-- Loading State -->
+    <div id="loadingView" class="view">
+      <div class="loader"></div>
+    </div>
 
-    <!-- Enhancement Mode -->
-    <section class="section">
-      <label class="section-label">Enhancement Mode</label>
-      <div class="btn-group" id="modeGroup">
-        <button data-value="local" class="btn-option active">Local</button>
-        <button data-value="ai" class="btn-option">AI-Powered</button>
+    <!-- Auth View (Login / Sign Up) -->
+    <div id="authView" class="view" style="display:none;">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="signin">Sign In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
       </div>
-    </section>
 
-    <!-- API Settings (only shown in AI mode) -->
-    <section class="section api-section" id="apiSection" style="display: none;">
-      <label class="section-label">API Provider</label>
-      <div class="btn-group" id="providerGroup">
-        <button data-value="openai" class="btn-option active">OpenAI</button>
-        <button data-value="anthropic" class="btn-option">Anthropic</button>
-      </div>
-      <div class="api-key-row">
-        <input type="password" id="apiKeyInput" placeholder="Enter API key" class="api-input" />
-        <button id="saveApiKey" class="btn-save">Save</button>
-      </div>
-      <p class="api-hint" id="apiHint"></p>
-    </section>
+      <form id="authForm" class="auth-form">
+        <input type="email" id="emailInput" placeholder="Email address" required autocomplete="email" />
+        <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password" />
+        <div id="authError" class="auth-error"></div>
+        <div id="authSuccess" class="auth-success"></div>
+        <button type="submit" id="authSubmitBtn" class="btn-primary">
+          <span id="authSubmitText">Sign In</span>
+          <div class="btn-loader" id="authLoader" style="display:none;"></div>
+        </button>
+      </form>
 
-    <!-- Stats -->
-    <section class="section stats-section">
-      <div class="stat">
-        <span class="stat-label">Prompts Enhanced</span>
-        <span class="stat-value" id="enhanceCount">0</span>
-      </div>
-    </section>
+      <p class="auth-footer">
+        <a href="#" id="forgotPasswordLink" class="forgot-link">Forgot password?</a>
+      </p>
+      <p class="auth-footer">
+        Free to use. Your prompts are private.
+      </p>
+    </div>
 
-    <!-- Enable/Disable Toggle -->
-    <section class="section toggle-section">
-      <label class="toggle-row">
-        <span class="toggle-label">Extension Enabled</span>
-        <div class="toggle-switch">
-          <input type="checkbox" id="enableToggle" checked />
-          <span class="toggle-slider"></span>
+    <!-- Dashboard View (Logged In) -->
+    <div id="dashboardView" class="view" style="display:none;">
+      <!-- User Info -->
+      <div class="user-bar">
+        <span class="user-email" id="userEmail"></span>
+        <button class="btn-link" id="signOutBtn">Sign Out</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-card">
+        <div class="stat-row">
+          <span class="stat-label">Prompts Enhanced</span>
+          <span class="stat-value" id="enhanceCount">0</span>
         </div>
-      </label>
-    </section>
+      </div>
+
+      <!-- Enhancement Style -->
+      <section class="section">
+        <label class="section-label">Enhancement Style</label>
+        <div class="btn-group" id="styleGroup">
+          <button data-value="concise" class="btn-option">Concise</button>
+          <button data-value="balanced" class="btn-option active">Balanced</button>
+          <button data-value="detailed" class="btn-option">Detailed</button>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button class="btn-secondary" id="historyBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Prompt History
+        </button>
+      </div>
+
+      <!-- How to Use -->
+      <div class="how-to-use">
+        <p>Type in any AI chat, then click the <strong>Enhance</strong> button or press <kbd>Ctrl+Shift+E</kbd></p>
+      </div>
+    </div>
+
   </div>
 
+  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

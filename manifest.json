@@ -1,12 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Prompt Enhancer",
-  "version": "1.0.0",
-  "description": "Enhance any AI prompt using proven frameworks (CO-STAR + RISEN). Works across ChatGPT, Claude, Gemini, and any website with a text input.",
+  "name": "Prompt Genius",
+  "version": "2.0.0",
+  "description": "Supercharge your AI prompts with one click. Works on ChatGPT, Claude, Gemini, and every AI platform.",
   "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://*.cloudfunctions.net/*",
+    "https://*.run.app/*"
+  ],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
