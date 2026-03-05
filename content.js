@@ -195,27 +195,12 @@
   }
 
   function positionButton() {
-    if (!activeInput || !enhanceButton) return;
-    const rect = activeInput.getBoundingClientRect();
-
-    // Position: bottom-right of input, above the send button area
-    // Use CSS 'right' so it's pinned to right edge and expands leftward
-    const rightOffset = window.innerWidth - rect.right + 12;
-
-    // Place above the bottom toolbar (send button area ~45px from bottom)
-    let top = rect.bottom - 45;
-
-    // If input is too small, place near the top
-    if (top < rect.top + 8) {
-      top = rect.top + 8;
-    }
-
-    // Clamp to viewport
-    top = Math.max(4, Math.min(top, window.innerHeight - 40));
-
-    enhanceButton.style.top = `${top}px`;
+    if (!enhanceButton) return;
+    // Fixed at bottom-right corner of viewport — does not scroll with page
+    enhanceButton.style.bottom = '24px';
+    enhanceButton.style.right = '24px';
+    enhanceButton.style.top = '';
     enhanceButton.style.left = '';
-    enhanceButton.style.right = `${Math.max(4, rightOffset)}px`;
   }
 
   function showButton() {
@@ -392,13 +377,8 @@
     if (text.length >= 3) { showButton(); } else { hideButton(0); }
   }
 
-  // ── Scroll / Resize ───────────────────────────────────────
-  let repositionRAF = null;
-  function onScrollOrResize() {
-    if (!enhanceButton || enhanceButton.style.display === 'none') return;
-    if (repositionRAF) cancelAnimationFrame(repositionRAF);
-    repositionRAF = requestAnimationFrame(positionButton);
-  }
+  // ── Scroll / Resize (no-op — button is fixed at bottom-right) ──
+  function onScrollOrResize() {}
 
   // ── MutationObserver ──────────────────────────────────────
   function setupObserver() {
