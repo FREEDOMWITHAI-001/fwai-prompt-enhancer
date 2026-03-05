@@ -357,6 +357,19 @@
     if (isMatchingInput(e.target)) {
       activeInput = e.target;
       checkAndShowButton();
+    } else {
+      // Check if the focused element is inside a matching input (e.g., <p> inside contenteditable)
+      const selectors = getInputSelectors();
+      for (const selector of selectors) {
+        try {
+          const match = e.target.closest(selector);
+          if (match) {
+            activeInput = match;
+            checkAndShowButton();
+            return;
+          }
+        } catch (ex) {}
+      }
     }
   }
 
@@ -365,7 +378,8 @@
   }
 
   function onInputChange(e) {
-    if (e.target === activeInput) {
+    // Check if target is our activeInput, or is inside it (contenteditable child nodes)
+    if (activeInput && (e.target === activeInput || activeInput.contains(e.target))) {
       checkAndShowButton();
     }
   }
@@ -380,12 +394,32 @@
   // ── Scroll / Resize (no-op — button is fixed at bottom-right) ──
   function onScrollOrResize() {}
 
+  // ── Auto-detect Input ────────────────────────────────────
+  function tryAutoDetectInput() {
+    const selectors = getInputSelectors();
+    for (const selector of selectors) {
+      try {
+        const el = document.querySelector(selector);
+        if (el) {
+          activeInput = el;
+          checkAndShowButton();
+          return true;
+        }
+      } catch (e) {}
+    }
+    return false;
+  }
+
   // ── MutationObserver ──────────────────────────────────────
   function setupObserver() {
     const observer = new MutationObserver(() => {
       if (activeInput && !document.body.contains(activeInput)) {
         activeInput = null;
         hideButton(0);
+      }
+      // Auto-detect input if none is active (SPA navigation, late-loaded inputs)
+      if (!activeInput) {
+        tryAutoDetectInput();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
@@ -425,10 +459,22 @@
     window.addEventListener('resize', onScrollOrResize);
     setupObserver();
 
+    // Try to find an active/matching input immediately
     if (document.activeElement && isMatchingInput(document.activeElement)) {
       activeInput = document.activeElement;
       checkAndShowButton();
+    } else {
+      // SPA pages (ChatGPT, Claude, etc.) may not have the input yet — retry
+      tryAutoDetectInput();
     }
+
+    // Periodic fallback: re-scan every 2s for late-loaded inputs (SPAs)
+    setInterval(() => {
+      if (!activeInput || !document.body.contains(activeInput)) {
+        activeInput = null;
+        tryAutoDetectInput();
+      }
+    }, 2000);
   }
 
   init();
