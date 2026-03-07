@@ -92,11 +92,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleEnhancement(prompt, platform = 'other') {
   try {
-    const auth = await getAuth();
-    if (!auth) {
-      return { success: false, error: 'not_authenticated' };
-    }
-
     const settings = await new Promise(resolve => {
       chrome.storage.sync.get({ enhancementStyle: 'balanced', enhanceCount: 0 }, resolve);
     });
@@ -107,24 +102,16 @@ async function handleEnhancement(prompt, platform = 'other') {
       return { success: false, error: 'Extension not configured. Please set up the backend.' };
     }
 
-    // Call Cloud Function
+    // Call Cloud Function (no auth required)
     const res = await fetch(enhanceUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.idToken}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
         platform,
         style: settings.enhancementStyle
       })
     });
-
-    if (res.status === 401) {
-      await chrome.storage.local.remove('auth');
-      return { success: false, error: 'not_authenticated' };
-    }
 
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));

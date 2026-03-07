@@ -46,6 +46,30 @@
     'you.com': {
       name: 'you',
       selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'huggingface.co': {
+      name: 'huggingface',
+      selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'labs.google': {
+      name: 'labs',
+      selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'aistudio.google.com': {
+      name: 'aistudio',
+      selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'deepseek.com': {
+      name: 'deepseek',
+      selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'chat.mistral.ai': {
+      name: 'mistral',
+      selectors: ['textarea', '[contenteditable="true"]']
+    },
+    'grok.x.ai': {
+      name: 'grok',
+      selectors: ['textarea', '[contenteditable="true"]']
     }
   };
 
@@ -278,12 +302,6 @@
         isEnhancing = false;
         setTimeout(() => setButtonState('idle'), 2000);
         break;
-      case 'auth_required':
-        enhanceButton.classList.add('fwai-error');
-        label.textContent = 'Sign in first';
-        isEnhancing = false;
-        setTimeout(() => setButtonState('idle'), 2500);
-        break;
       case 'idle':
       default:
         label.textContent = 'Enhance';
@@ -344,8 +362,6 @@
       const response = await chrome.runtime.sendMessage({
         type: 'ENHANCE_PROMPT', prompt: text, platform: platform
       });
-
-      if (response?.error === 'not_authenticated') { setButtonState('auth_required'); return; }
 
       if (response?.success && response.enhanced) {
         writeInput(activeInput, cleanMarkdown(response.enhanced));

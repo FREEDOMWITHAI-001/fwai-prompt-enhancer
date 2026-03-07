@@ -302,12 +302,6 @@ exports.enhance = onRequest(
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    // Auth check
-    const user = await verifyAuth(req);
-    if (!user) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
     const { prompt, platform = "other", style = "balanced" } = req.body;
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -342,19 +336,9 @@ exports.enhance = onRequest(
         createdAt: new Date().toISOString()
       };
 
-      // Fire-and-forget: save to user's history and increment count
-      const userRef = db.collection("users").doc(user.uid);
-      Promise.all([
-        userRef.collection("history").add(historyEntry),
-        userRef.set(
-          {
-            email: user.email || "",
-            enhanceCount: admin.firestore.FieldValue.increment(1),
-            lastActive: admin.firestore.FieldValue.serverTimestamp()
-          },
-          { merge: true }
-        )
-      ]).catch((e) => console.error("Firestore write failed:", e));
+      // Fire-and-forget: save to anonymous history
+      db.collection("history").add(historyEntry)
+        .catch((e) => console.error("Firestore write failed:", e));
 
       return res.status(200).json({ enhanced });
     } catch (error) {
