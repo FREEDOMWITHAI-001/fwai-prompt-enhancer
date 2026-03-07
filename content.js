@@ -397,10 +397,28 @@
     handleEnhanceClick();
   }
 
+  // ── ResizeObserver — reposition when input box grows/shrinks ──
+  let resizeObserver = null;
+
+  function observeInputResize(element) {
+    if (resizeObserver) resizeObserver.disconnect();
+    resizeObserver = new ResizeObserver(() => {
+      if (enhanceButton && enhanceButton.style.display !== 'none') {
+        requestAnimationFrame(positionButton);
+      }
+    });
+    resizeObserver.observe(element);
+    // Also observe parent container (some sites resize the wrapper, not the input)
+    if (element.parentElement) {
+      resizeObserver.observe(element.parentElement);
+    }
+  }
+
   // ── Input Tracking ────────────────────────────────────────
   function onFocusIn(e) {
     if (isMatchingInput(e.target)) {
       activeInput = e.target;
+      observeInputResize(activeInput);
       checkAndShowButton();
     } else {
       // Check if the focused element is inside a matching input (e.g., <p> inside contenteditable)
@@ -410,6 +428,7 @@
           const match = e.target.closest(selector);
           if (match) {
             activeInput = match;
+            observeInputResize(activeInput);
             checkAndShowButton();
             return;
           }
@@ -426,6 +445,8 @@
     // Check if target is our activeInput, or is inside it (contenteditable child nodes)
     if (activeInput && (e.target === activeInput || activeInput.contains(e.target))) {
       checkAndShowButton();
+      // Reposition after a brief delay to catch textarea resize
+      setTimeout(() => requestAnimationFrame(positionButton), 50);
     }
   }
 
