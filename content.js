@@ -49,10 +49,13 @@
     }
   };
 
-  const GENERIC_SELECTORS = ['textarea', '[contenteditable="true"]', '[role="textbox"]'];
-
   function getHostname() {
     return window.location.hostname.replace(/^www\./, '');
+  }
+
+  function isAIToolSite() {
+    const hostname = getHostname();
+    return Object.keys(PLATFORMS).some(domain => hostname.includes(domain));
   }
 
   function detectPlatform() {
@@ -60,12 +63,13 @@
     for (const [domain, platform] of Object.entries(PLATFORMS)) {
       if (hostname.includes(domain)) return platform;
     }
-    return { name: 'other', selectors: [] };
+    return null;
   }
 
   function getInputSelectors() {
     const platform = detectPlatform();
-    return [...platform.selectors, ...GENERIC_SELECTORS];
+    if (!platform) return [];
+    return platform.selectors;
   }
 
   function isMatchingInput(element) {
@@ -306,7 +310,7 @@
     if (!isExtensionContextValid()) { showRefreshMessage(); return; }
 
     lastOriginalText = text;
-    const platform = detectPlatform().name;
+    const platform = detectPlatform()?.name || 'other';
     setButtonState('loading');
 
     try {
@@ -450,6 +454,7 @@
 
   // ── Initialize ────────────────────────────────────────────
   function init() {
+    if (!isAIToolSite()) return; // Only run on recognized AI tool websites
     createButton();
     document.addEventListener('focusin', onFocusIn, true);
     document.addEventListener('focusout', onFocusOut, true);
