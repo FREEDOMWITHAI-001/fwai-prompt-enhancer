@@ -199,12 +199,13 @@
   }
 
   function positionButton() {
-    if (!enhanceButton) return;
-    // Fixed at bottom-right corner of viewport — does not scroll with page
-    enhanceButton.style.bottom = '24px';
-    enhanceButton.style.right = '24px';
-    enhanceButton.style.top = '';
-    enhanceButton.style.left = '';
+    if (!enhanceButton || !activeInput) return;
+    const rect = activeInput.getBoundingClientRect();
+    // Position at bottom-right corner of the input, inside the box (like Grammarly)
+    enhanceButton.style.top = (rect.bottom - 36) + 'px';
+    enhanceButton.style.left = (rect.right - 100) + 'px';
+    enhanceButton.style.bottom = '';
+    enhanceButton.style.right = '';
   }
 
   function showButton() {
@@ -395,8 +396,12 @@
     if (text.length >= 3) { showButton(); } else { hideButton(0); }
   }
 
-  // ── Scroll / Resize (no-op — button is fixed at bottom-right) ──
-  function onScrollOrResize() {}
+  // ── Scroll / Resize — reposition button to follow input ──
+  function onScrollOrResize() {
+    if (enhanceButton && enhanceButton.style.display !== 'none') {
+      requestAnimationFrame(positionButton);
+    }
+  }
 
   // ── Auto-detect Input ────────────────────────────────────
   function tryAutoDetectInput() {
