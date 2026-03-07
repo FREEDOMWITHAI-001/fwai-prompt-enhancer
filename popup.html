@@ -9,7 +9,7 @@
 <body>
   <div class="popup-container">
 
-    <!-- Header (always visible) -->
+    <!-- Header -->
     <header class="header">
       <div class="header-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -22,45 +22,8 @@
       </div>
     </header>
 
-    <!-- Loading State -->
-    <div id="loadingView" class="view">
-      <div class="loader"></div>
-    </div>
-
-    <!-- Auth View (Login / Sign Up) -->
-    <div id="authView" class="view" style="display:none;">
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="signin">Sign In</button>
-        <button class="auth-tab" data-tab="signup">Sign Up</button>
-      </div>
-
-      <form id="authForm" class="auth-form">
-        <input type="email" id="emailInput" placeholder="Email address" required autocomplete="email" />
-        <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password" />
-        <div id="authError" class="auth-error"></div>
-        <div id="authSuccess" class="auth-success"></div>
-        <button type="submit" id="authSubmitBtn" class="btn-primary">
-          <span id="authSubmitText">Sign In</span>
-          <div class="btn-loader" id="authLoader" style="display:none;"></div>
-        </button>
-      </form>
-
-      <p class="auth-footer">
-        <a href="#" id="forgotPasswordLink" class="forgot-link">Forgot password?</a>
-      </p>
-      <p class="auth-footer">
-        Free to use. Your prompts are private.
-      </p>
-    </div>
-
-    <!-- Dashboard View (Logged In) -->
-    <div id="dashboardView" class="view" style="display:none;">
-      <!-- User Info -->
-      <div class="user-bar">
-        <span class="user-email" id="userEmail"></span>
-        <button class="btn-link" id="signOutBtn">Sign Out</button>
-      </div>
-
+    <!-- Dashboard -->
+    <div id="dashboardView" class="view">
       <!-- Stats -->
       <div class="stats-card">
         <div class="stat-row">

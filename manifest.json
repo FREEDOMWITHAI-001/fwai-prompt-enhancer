@@ -1,15 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Prompt Genius",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Supercharge your AI prompts with one click. Works on ChatGPT, Claude, Gemini, and every AI platform.",
-  "permissions": ["activeTab", "storage"],
-  "host_permissions": [
-    "https://identitytoolkit.googleapis.com/*",
-    "https://securetoken.googleapis.com/*",
-    "https://*.cloudfunctions.net/*",
-    "https://*.run.app/*"
-  ],
+  "permissions": ["storage"],
   "background": {
     "service_worker": "background.js"
   },
