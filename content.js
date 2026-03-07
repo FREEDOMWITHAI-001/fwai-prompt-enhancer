@@ -13,45 +13,10 @@
   let hideTimeout = null;
   let lastOriginalText = null;
 
-  // ── Smart AI Platform Detection (no hardcoded URLs) ───────
-  function isLikelyAIPlatform() {
-    const hostname = window.location.hostname.toLowerCase();
-    const title = (document.title || '').toLowerCase();
-
-    // 1. Sites with .ai TLD (claude.ai, perplexity.ai, mistral.ai, character.ai, etc.)
-    const parts = hostname.split('.');
-    if (parts[parts.length - 1] === 'ai') return true;
-
-    // 2. Well-known AI terms in hostname (resilient to URL changes)
-    const aiTerms = [
-      'openai', 'chatgpt', 'anthropic', 'gemini', 'grok', 'deepseek',
-      'mistral', 'huggingface', 'perplexity', 'copilot', 'groq',
-      'fireworks', 'cohere', 'together', 'replicate', 'lmsys',
-      'aistudio', 'ollama', 'typingmind', 'chatbot', 'poe.com', 'you.com'
-    ];
-    for (const term of aiTerms) {
-      if (hostname.includes(term)) return true;
-    }
-
-    // 3. Google AI products (gemini.google.com, labs.google, aistudio.google.com)
-    if (hostname.includes('google') &&
-        (hostname.includes('gemini') || hostname.includes('aistudio') || hostname.includes('labs'))) {
-      return true;
-    }
-
-    // 4. Title-based detection for unknown/new platforms
-    const titleTerms = [
-      'chatgpt', 'claude', 'gemini', 'grok', 'copilot', 'deepseek',
-      'ai chat', 'ai assistant', 'llm playground', 'chatbot'
-    ];
-    for (const term of titleTerms) {
-      if (title.includes(term)) return true;
-    }
-
-    return false;
-  }
-
-  // ── Universal Input Detection ─────────────────────────────
+  // ── Prompt Input Detection ──────────────────────────────────
+  // The manifest restricts which sites the script runs on.
+  // This function filters for actual AI prompt inputs vs other textareas
+  // (settings, feedback forms, search bars, etc.) on those sites.
   function isPromptInput(element) {
     if (!element || element.nodeType !== 1) return false;
 
@@ -67,14 +32,24 @@
     const style = window.getComputedStyle(element);
     if (style.display === 'none' || style.visibility === 'hidden') return false;
 
+    // Skip elements inside traditional HTML forms (login, feedback, settings, etc.)
+    const parentForm = element.closest('form');
+    if (parentForm && parentForm.getAttribute('action')) return false;
+
     // Skip single-line search-like inputs
     if (isTextArea && element.rows <= 1 && rect.height < 50) {
-      // Allow if it has placeholder hinting at chat/prompt usage
       const ph = (element.placeholder || '').toLowerCase();
       if (!ph.includes('message') && !ph.includes('prompt') && !ph.includes('ask') && !ph.includes('chat') && !ph.includes('type')) {
         return false;
       }
     }
+
+    // Skip inputs with roles/types that indicate non-prompt usage
+    const role = (element.getAttribute('role') || '').toLowerCase();
+    if (role === 'search' || role === 'searchbox') return false;
+
+    const type = (element.getAttribute('type') || '').toLowerCase();
+    if (type === 'search' || type === 'email' || type === 'password' || type === 'url') return false;
 
     return true;
   }
@@ -484,7 +459,6 @@
 
   // ── Initialize ────────────────────────────────────────────
   function init() {
-    if (!isLikelyAIPlatform()) return; // Only activate on AI platforms
     createButton();
     document.addEventListener('focusin', onFocusIn, true);
     document.addEventListener('focusout', onFocusOut, true);
