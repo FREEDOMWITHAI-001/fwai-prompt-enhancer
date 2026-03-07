@@ -199,11 +199,35 @@
   }
 
   function positionButton() {
-    if (!enhanceButton || !activeInput) return;
+    if (!enhanceButton) return;
+    if (!activeInput || !document.body.contains(activeInput)) {
+      // Fallback: bottom-right of viewport
+      enhanceButton.style.top = '';
+      enhanceButton.style.left = '';
+      enhanceButton.style.bottom = '80px';
+      enhanceButton.style.right = '24px';
+      return;
+    }
     const rect = activeInput.getBoundingClientRect();
-    // Position at bottom-right corner of the input, inside the box (like Grammarly)
-    enhanceButton.style.top = (rect.bottom - 36) + 'px';
-    enhanceButton.style.left = (rect.right - 100) + 'px';
+    if (rect.width === 0 && rect.height === 0) {
+      // Element not visible, use fallback
+      enhanceButton.style.top = '';
+      enhanceButton.style.left = '';
+      enhanceButton.style.bottom = '80px';
+      enhanceButton.style.right = '24px';
+      return;
+    }
+    // Position at bottom-right inside the input box (like Grammarly)
+    const btnHeight = 30;
+    const btnWidth = 95;
+    const padding = 8;
+    let top = rect.bottom - btnHeight - padding;
+    let left = rect.right - btnWidth - padding;
+    // Clamp within viewport
+    top = Math.max(4, Math.min(top, window.innerHeight - btnHeight - 4));
+    left = Math.max(4, Math.min(left, window.innerWidth - btnWidth - 4));
+    enhanceButton.style.top = top + 'px';
+    enhanceButton.style.left = left + 'px';
     enhanceButton.style.bottom = '';
     enhanceButton.style.right = '';
   }
