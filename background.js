@@ -1,6 +1,55 @@
-// background.js — Prompt Genius: pure JS template-based prompt enhancement (no API needed)
+// background.js — Prompt Genius: Gemini AI-powered enhancement with template fallback
 
-// ── Use-Case Detection ──────────────────────────────────────────
+// ── Gemini API Enhancement ──────────────────────────────────────
+
+async function enhanceWithGemini(prompt, platform, style, apiKey) {
+  const styleGuide = {
+    concise: 'Keep the enhanced prompt brief and focused. No unnecessary verbosity.',
+    balanced: 'Add moderate structure and detail. Balance clarity with brevity.',
+    detailed: 'Be comprehensive. Add thorough structure, edge cases, and detailed instructions.'
+  };
+
+  const systemPrompt = `You are an expert prompt engineer. Your job is to take a user's raw prompt and enhance it to get better results from AI models.
+
+Rules:
+- Maintain the original intent and meaning completely
+- Add structure, clarity, and specificity
+- Add a relevant role/persona assignment if appropriate
+- Add output format guidance if helpful
+- Style preference: ${styleGuide[style] || styleGuide.balanced}
+- The user is writing this prompt for: ${platform}
+- Return ONLY the enhanced prompt text, ready to paste
+- Do NOT add meta-commentary, explanations, or wrap in quotes
+- Do NOT use markdown headers (##) or bold (**) formatting — output plain text`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Empty response from Gemini');
+  return text.trim();
+}
+
+// ── Template-Based Enhancement (fallback) ───────────────────────
 
 const USE_CASES = {
   code_generation: {
@@ -116,27 +165,9 @@ function detectUseCase(prompt) {
   return bestMatch ? USE_CASES[bestMatch] : GENERAL_CASE;
 }
 
-// ── Platform Tips ───────────────────────────────────────────────
-
-const PLATFORM_TIPS = {
-  chatgpt: 'Use clear role definitions and specify output format precisely.',
-  claude: 'Provide rich context upfront and use structured sections with headers.',
-  gemini: 'Frame with research-oriented language and ask for citations.',
-  copilot: 'Keep instructions concise and structured.',
-  perplexity: 'Frame as specific research questions with source requests.',
-  deepseek: 'Use clear step-by-step instructions for reasoning tasks.',
-  mistral: 'Be explicit about output format and constraints.',
-  grok: 'Use direct, clear instructions with specific output expectations.',
-  other: 'Use clear role assignment, structured instructions, and explicit output format.'
-};
-
-// ── Enhancement Engine (pure JS, no API) ────────────────────────
-
-function enhancePrompt(prompt, platform = 'other', style = 'balanced') {
+function enhancePromptTemplate(prompt, platform = 'other', style = 'balanced') {
   const useCase = detectUseCase(prompt);
-  const tip = PLATFORM_TIPS[platform] || PLATFORM_TIPS.other;
 
-  // Determine depth based on style
   let depth;
   if (style === 'concise') {
     depth = { intro: true, sections: false, verify: false };
@@ -146,16 +177,10 @@ function enhancePrompt(prompt, platform = 'other', style = 'balanced') {
     depth = { intro: true, sections: true, verify: false };
   }
 
-  // Build enhanced prompt
   let enhanced = '';
-
-  // Role assignment
   enhanced += `Act as ${useCase.role}.\n\n`;
-
-  // Context + original prompt
   enhanced += `## Task\n${prompt.trim()}\n\n`;
 
-  // Structured sections
   if (depth.sections) {
     enhanced += `## Instructions\n`;
     enhanced += `- Think through this step-by-step before responding.\n`;
@@ -170,7 +195,6 @@ function enhancePrompt(prompt, platform = 'other', style = 'balanced') {
     enhanced += `\n`;
   }
 
-  // Quality constraints
   enhanced += `## Constraints\n`;
   enhanced += `- Be thorough but avoid filler — every sentence should add value.\n`;
   enhanced += `- If you're unsure about something, say so rather than guessing.\n`;
@@ -181,14 +205,11 @@ function enhancePrompt(prompt, platform = 'other', style = 'balanced') {
   }
   enhanced += `\n`;
 
-  // Self-verification
   if (depth.verify) {
     enhanced += `Before finalizing your response, verify that you have addressed all requirements and check your work for accuracy and completeness.\n\n`;
   }
 
-  // Clarifying questions footer
   enhanced += `${useCase.suffix}`;
-
   return enhanced;
 }
 
@@ -196,33 +217,38 @@ function enhancePrompt(prompt, platform = 'other', style = 'balanced') {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ENHANCE_PROMPT') {
-    try {
-      const settings = chrome.storage.sync.get(
-        { enhancementStyle: 'balanced', enhanceCount: 0 },
-        (s) => {
-          const enhanced = enhancePrompt(message.prompt, message.platform, s.enhancementStyle);
+    chrome.storage.sync.get(
+      { enhancementStyle: 'balanced', enhanceCount: 0, geminiApiKey: '', enhancementMode: 'template' },
+      async (s) => {
+        try {
+          let enhanced;
 
-          // Increment local counter
+          if (s.enhancementMode === 'gemini' && s.geminiApiKey) {
+            enhanced = await enhanceWithGemini(message.prompt, message.platform, s.enhancementStyle, s.geminiApiKey);
+          } else {
+            enhanced = enhancePromptTemplate(message.prompt, message.platform, s.enhancementStyle);
+          }
+
           const newCount = (s.enhanceCount || 0) + 1;
           chrome.storage.sync.set({ enhanceCount: newCount });
 
-          // Save to local history
           saveToLocalHistory({
             original: message.prompt,
             enhanced,
             platform: message.platform,
             style: s.enhancementStyle,
+            mode: s.enhancementMode === 'gemini' && s.geminiApiKey ? 'gemini' : 'template',
             timestamp: Date.now()
           });
 
           sendResponse({ success: true, enhanced });
+        } catch (error) {
+          console.error('[PromptGenius] Enhancement failed:', error);
+          sendResponse({ success: false, error: error.message });
         }
-      );
-    } catch (error) {
-      console.error('[PromptGenius] Enhancement failed:', error);
-      sendResponse({ success: false, error: error.message });
-    }
-    return true; // async response
+      }
+    );
+    return true;
   }
 
   if (message.type === 'GET_HISTORY') {
@@ -233,11 +259,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'GET_SETTINGS') {
     chrome.storage.sync.get({
       enhancementStyle: 'balanced',
-      enhanceCount: 0
+      enhanceCount: 0,
+      enhancementMode: 'template',
+      geminiApiKey: ''
     }, sendResponse);
     return true;
   }
+
+  if (message.type === 'VALIDATE_API_KEY') {
+    validateGeminiKey(message.apiKey).then(sendResponse);
+    return true;
+  }
 });
+
+// ── API Key Validation ──────────────────────────────────────────
+
+async function validateGeminiKey(apiKey) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Say "ok"' }] }],
+          generationConfig: { maxOutputTokens: 5 }
+        })
+      }
+    );
+    if (response.ok) return { success: true };
+    const err = await response.text();
+    return { success: false, error: `API returned ${response.status}` };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
 
 // ── Local History ───────────────────────────────────────────────
 

@@ -32,6 +32,26 @@
         </div>
       </div>
 
+      <!-- Enhancement Mode -->
+      <section class="section">
+        <label class="section-label">Enhancement Mode</label>
+        <div class="btn-group" id="modeGroup">
+          <button data-value="template" class="btn-option active">Template</button>
+          <button data-value="gemini" class="btn-option">Gemini AI</button>
+        </div>
+      </section>
+
+      <!-- Gemini API Key (shown when Gemini mode selected) -->
+      <section class="section" id="apiKeySection" style="display: none;">
+        <label class="section-label">Gemini API Key</label>
+        <div class="api-key-row">
+          <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key" class="api-key-field">
+          <button class="btn-save-key" id="saveKeyBtn">Save</button>
+        </div>
+        <div id="apiKeyStatus" class="api-key-status"></div>
+        <p class="api-key-hint">Get a free key from <a href="#" id="aiStudioLink">Google AI Studio</a></p>
+      </section>
+
       <!-- Enhancement Style -->
       <section class="section">
         <label class="section-label">Enhancement Style</label>
@@ -55,7 +75,7 @@
 
       <!-- How to Use -->
       <div class="how-to-use">
-        <p>Type in any AI chat, then click the <strong>Enhance</strong> button or press <kbd>Ctrl+Shift+E</kbd></p>
+        <p>Works on <strong>any AI platform</strong> automatically. Type in any chat input, then click <strong>Enhance</strong> or press <kbd>Ctrl+Shift+E</kbd></p>
       </div>
     </div>
 

@@ -1,4 +1,4 @@
-// content.js — Prompt Genius: DOM detection, button injection, platform-aware enhancement
+// content.js — Prompt Genius: universal input detection, button injection, AI-powered enhancement
 
 (function () {
   'use strict';
@@ -13,96 +13,77 @@
   let hideTimeout = null;
   let lastOriginalText = null;
 
-  // ── Platform Detection ────────────────────────────────────
-  const PLATFORMS = {
-    'chatgpt.com': {
-      name: 'chatgpt',
-      selectors: ['#prompt-textarea', 'div[contenteditable="true"][id="prompt-textarea"]']
-    },
-    'chat.openai.com': {
-      name: 'chatgpt',
-      selectors: ['#prompt-textarea', 'div[contenteditable="true"][id="prompt-textarea"]']
-    },
-    'claude.ai': {
-      name: 'claude',
-      selectors: ['.ProseMirror[contenteditable="true"]', 'div[contenteditable="true"].ProseMirror']
-    },
-    'gemini.google.com': {
-      name: 'gemini',
-      selectors: ['.ql-editor[contenteditable="true"]', 'rich-textarea [contenteditable="true"]', '.text-input-area [contenteditable="true"]']
-    },
-    'copilot.microsoft.com': {
-      name: 'copilot',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'poe.com': {
-      name: 'poe',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'perplexity.ai': {
-      name: 'perplexity',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'you.com': {
-      name: 'you',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'huggingface.co': {
-      name: 'huggingface',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'labs.google': {
-      name: 'labs',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'aistudio.google.com': {
-      name: 'aistudio',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'deepseek.com': {
-      name: 'deepseek',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'chat.mistral.ai': {
-      name: 'mistral',
-      selectors: ['textarea', '[contenteditable="true"]']
-    },
-    'grok.x.ai': {
-      name: 'grok',
-      selectors: ['textarea', '[contenteditable="true"]']
+  // ── Smart AI Platform Detection (no hardcoded URLs) ───────
+  function isLikelyAIPlatform() {
+    const hostname = window.location.hostname.toLowerCase();
+    const title = (document.title || '').toLowerCase();
+
+    // 1. Sites with .ai TLD (claude.ai, perplexity.ai, mistral.ai, character.ai, etc.)
+    const parts = hostname.split('.');
+    if (parts[parts.length - 1] === 'ai') return true;
+
+    // 2. Well-known AI terms in hostname (resilient to URL changes)
+    const aiTerms = [
+      'openai', 'chatgpt', 'anthropic', 'gemini', 'grok', 'deepseek',
+      'mistral', 'huggingface', 'perplexity', 'copilot', 'groq',
+      'fireworks', 'cohere', 'together', 'replicate', 'lmsys',
+      'aistudio', 'ollama', 'typingmind', 'chatbot', 'poe.com', 'you.com'
+    ];
+    for (const term of aiTerms) {
+      if (hostname.includes(term)) return true;
     }
-  };
 
-  function getHostname() {
-    return window.location.hostname.replace(/^www\./, '');
-  }
-
-  function isAIToolSite() {
-    const hostname = getHostname();
-    return Object.keys(PLATFORMS).some(domain => hostname.includes(domain));
-  }
-
-  function detectPlatform() {
-    const hostname = getHostname();
-    for (const [domain, platform] of Object.entries(PLATFORMS)) {
-      if (hostname.includes(domain)) return platform;
+    // 3. Google AI products (gemini.google.com, labs.google, aistudio.google.com)
+    if (hostname.includes('google') &&
+        (hostname.includes('gemini') || hostname.includes('aistudio') || hostname.includes('labs'))) {
+      return true;
     }
-    return null;
-  }
 
-  function getInputSelectors() {
-    const platform = detectPlatform();
-    if (!platform) return [];
-    return platform.selectors;
-  }
-
-  function isMatchingInput(element) {
-    if (!element || element.nodeType !== 1) return false;
-    const selectors = getInputSelectors();
-    for (const selector of selectors) {
-      try { if (element.matches(selector)) return true; } catch (e) {}
+    // 4. Title-based detection for unknown/new platforms
+    const titleTerms = [
+      'chatgpt', 'claude', 'gemini', 'grok', 'copilot', 'deepseek',
+      'ai chat', 'ai assistant', 'llm playground', 'chatbot'
+    ];
+    for (const term of titleTerms) {
+      if (title.includes(term)) return true;
     }
+
     return false;
+  }
+
+  // ── Universal Input Detection ─────────────────────────────
+  function isPromptInput(element) {
+    if (!element || element.nodeType !== 1) return false;
+
+    const isTextArea = element.tagName === 'TEXTAREA';
+    const isContentEditable = element.getAttribute('contenteditable') === 'true';
+    if (!isTextArea && !isContentEditable) return false;
+
+    // Skip hidden/tiny elements
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return false;
+    if (rect.width < 150) return false;
+
+    const style = window.getComputedStyle(element);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+
+    // Skip single-line search-like inputs
+    if (isTextArea && element.rows <= 1 && rect.height < 50) {
+      // Allow if it has placeholder hinting at chat/prompt usage
+      const ph = (element.placeholder || '').toLowerCase();
+      if (!ph.includes('message') && !ph.includes('prompt') && !ph.includes('ask') && !ph.includes('chat') && !ph.includes('type')) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function detectPlatformName() {
+    const hostname = window.location.hostname.replace(/^www\./, '');
+    const parts = hostname.split('.');
+    // e.g. "chatgpt.com" → "chatgpt", "claude.ai" → "claude", "chat.deepseek.com" → "deepseek"
+    return parts.length >= 2 ? parts[parts.length - 2] : hostname;
   }
 
   // ── Read / Write Input ────────────────────────────────────
@@ -225,7 +206,6 @@
   function positionButton() {
     if (!enhanceButton) return;
     if (!activeInput || !document.body.contains(activeInput)) {
-      // Fallback: bottom-right of viewport
       enhanceButton.style.top = '';
       enhanceButton.style.left = '';
       enhanceButton.style.bottom = '80px';
@@ -234,20 +214,17 @@
     }
     const rect = activeInput.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) {
-      // Element not visible, use fallback
       enhanceButton.style.top = '';
       enhanceButton.style.left = '';
       enhanceButton.style.bottom = '80px';
       enhanceButton.style.right = '24px';
       return;
     }
-    // Position at bottom-right inside the input box (like Grammarly)
     const btnHeight = 30;
     const btnWidth = 95;
     const padding = 8;
     let top = rect.bottom - btnHeight - padding;
     let left = rect.right - btnWidth - padding;
-    // Clamp within viewport
     top = Math.max(4, Math.min(top, window.innerHeight - btnHeight - 4));
     left = Math.max(4, Math.min(left, window.innerWidth - btnWidth - 4));
     enhanceButton.style.top = top + 'px';
@@ -353,7 +330,7 @@
     if (!isExtensionContextValid()) { showRefreshMessage(); return; }
 
     lastOriginalText = text;
-    const platform = detectPlatform()?.name || 'other';
+    const platform = detectPlatformName();
     setButtonState('loading');
 
     try {
@@ -408,7 +385,6 @@
       }
     });
     resizeObserver.observe(element);
-    // Also observe parent container (some sites resize the wrapper, not the input)
     if (element.parentElement) {
       resizeObserver.observe(element.parentElement);
     }
@@ -416,23 +392,17 @@
 
   // ── Input Tracking ────────────────────────────────────────
   function onFocusIn(e) {
-    if (isMatchingInput(e.target)) {
+    if (isPromptInput(e.target)) {
       activeInput = e.target;
       observeInputResize(activeInput);
       checkAndShowButton();
     } else {
-      // Check if the focused element is inside a matching input (e.g., <p> inside contenteditable)
-      const selectors = getInputSelectors();
-      for (const selector of selectors) {
-        try {
-          const match = e.target.closest(selector);
-          if (match) {
-            activeInput = match;
-            observeInputResize(activeInput);
-            checkAndShowButton();
-            return;
-          }
-        } catch (ex) {}
+      // Check if the focused element is inside a contenteditable
+      const match = e.target.closest('[contenteditable="true"]');
+      if (match && isPromptInput(match)) {
+        activeInput = match;
+        observeInputResize(activeInput);
+        checkAndShowButton();
       }
     }
   }
@@ -442,10 +412,8 @@
   }
 
   function onInputChange(e) {
-    // Check if target is our activeInput, or is inside it (contenteditable child nodes)
     if (activeInput && (e.target === activeInput || activeInput.contains(e.target))) {
       checkAndShowButton();
-      // Reposition after a brief delay to catch textarea resize
       setTimeout(() => requestAnimationFrame(positionButton), 50);
     }
   }
@@ -466,16 +434,13 @@
 
   // ── Auto-detect Input ────────────────────────────────────
   function tryAutoDetectInput() {
-    const selectors = getInputSelectors();
-    for (const selector of selectors) {
-      try {
-        const el = document.querySelector(selector);
-        if (el) {
-          activeInput = el;
-          checkAndShowButton();
-          return true;
-        }
-      } catch (e) {}
+    const candidates = document.querySelectorAll('textarea, [contenteditable="true"]');
+    for (const el of candidates) {
+      if (isPromptInput(el)) {
+        activeInput = el;
+        checkAndShowButton();
+        return true;
+      }
     }
     return false;
   }
@@ -487,7 +452,6 @@
         activeInput = null;
         hideButton(0);
       }
-      // Auto-detect input if none is active (SPA navigation, late-loaded inputs)
       if (!activeInput) {
         tryAutoDetectInput();
       }
@@ -500,7 +464,7 @@
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
       e.preventDefault();
       e.stopPropagation();
-      if (!activeInput && document.activeElement && isMatchingInput(document.activeElement)) {
+      if (!activeInput && document.activeElement && isPromptInput(document.activeElement)) {
         activeInput = document.activeElement;
       }
       if (activeInput) {
@@ -520,7 +484,7 @@
 
   // ── Initialize ────────────────────────────────────────────
   function init() {
-    if (!isAIToolSite()) return; // Only run on recognized AI tool websites
+    if (!isLikelyAIPlatform()) return; // Only activate on AI platforms
     createButton();
     document.addEventListener('focusin', onFocusIn, true);
     document.addEventListener('focusout', onFocusOut, true);
@@ -530,12 +494,10 @@
     window.addEventListener('resize', onScrollOrResize);
     setupObserver();
 
-    // Try to find an active/matching input immediately
-    if (document.activeElement && isMatchingInput(document.activeElement)) {
+    if (document.activeElement && isPromptInput(document.activeElement)) {
       activeInput = document.activeElement;
       checkAndShowButton();
     } else {
-      // SPA pages (ChatGPT, Claude, etc.) may not have the input yet — retry
       tryAutoDetectInput();
     }
 

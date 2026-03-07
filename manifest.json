@@ -1,32 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Prompt Genius",
-  "version": "2.1.0",
-  "description": "Supercharge your AI prompts with one click. Works on ChatGPT, Claude, Gemini, and every AI platform.",
+  "version": "3.0.0",
+  "description": "Supercharge your AI prompts with one click. Works on any AI platform.",
   "permissions": ["storage"],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://chatgpt.com/*",
-        "https://chat.openai.com/*",
-        "https://claude.ai/*",
-        "https://gemini.google.com/*",
-        "https://copilot.microsoft.com/*",
-        "https://poe.com/*",
-        "https://perplexity.ai/*",
-        "https://www.perplexity.ai/*",
-        "https://you.com/*",
-        "https://huggingface.co/chat/*",
-        "https://labs.google/*",
-        "https://aistudio.google.com/*",
-        "https://deepseek.com/*",
-        "https://chat.deepseek.com/*",
-        "https://chat.mistral.ai/*",
-        "https://grok.x.ai/*"
-      ],
+      "matches": ["https://*/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
